@@ -1,5 +1,3 @@
-import pickle
-
 import numpy as np
 # Calculating accuracy score
 import matplotlib.pyplot as plt

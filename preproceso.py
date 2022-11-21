@@ -1,16 +1,23 @@
 import re
+
 import pickle
+
 import nltk
 from nltk import WordNetLemmatizer
 from nltk.corpus import stopwords
 from nltk.stem import SnowballStemmer
 from nltk.tokenize import ToktokTokenizer
+
+import gensim.corpora
 from gensim.corpora import Dictionary
 from gensim.models import LdaModel
+
 import seaborn as sns
 import pandas as pd
 import matplotlib.pyplot as plt
+
 from sklearn.feature_extraction.text import CountVectorizer
+
 import numpy as np
 
 nltk.download("stopwords")
@@ -63,20 +70,6 @@ def plot_difference_matplotlib(mdiff, title="", annotation=None):
     plt.colorbar(data)
     plt.savefig('Imagenes/Matrices/'+title+'.png')
 
-def display_topics(H, W, feature_names, documents, no_top_words, no_top_documents):
-    for topic_idx, topic in enumerate(H):
-        print("Topic %d:" % (topic_idx))
-        print(''.join([' ' +feature_names[i] + ' ' + str(round(topic[i], 5)) #y esto también
-                for i in topic.argsort()[:-no_top_words - 1:-1]]))
-        top_doc_indices = np.argsort( W[:,topic_idx] )[::-1][0:no_top_documents]
-        docProbArray=np.argsort(W[:,topic_idx])
-        print(docProbArray)
-        howMany=len(docProbArray);
-        print("How Many");
-        print(howMany);
-        for doc_index in top_doc_indices:
-            print(documents[doc_index])
-
 def topicosReview(cuerpo, indice_review):
     # Cargo el modelo lda
     file = open("./modelos/lda.sav", "rb")
@@ -85,20 +78,11 @@ def topicosReview(cuerpo, indice_review):
 
     bow_review = cuerpo[indice_review]
     topicos = [0] * lda.num_topics
-    # Indices de los topicos mas significativos
-    #dist_indices = [topico[0] for topico in lda[bow_review]]
-    # Contribución de los topicos mas significativos
-    # dist_contrib = [topico[1] for topico in lda[bow_review]]
+
     dt = lda.get_document_topics(bow_review)
-    dicc = dict(dt)
-    valores = [i for i in dicc.values()]
-    llaves = [i for i in dicc.keys()]
-    valorMax = max(valores)
-    iMax = valores.index(valorMax)
-    indice = llaves[iMax]
-    topicos[indice] = valorMax
-    """for t in dt:
-        topicos[t[0]]=t[1]"""
+    for t in dt:
+        topicos[t[0]]=t[1]
+
     return topicos
 
 def diseaseToChapter(disease):
@@ -120,6 +104,8 @@ def diseaseToChapter(disease):
     return dictDC[disease]
 
 def topicosTest(review, diccionario):
+    diccionario = gensim.corpora.Dictionary.load("modelos/dicc")
+
     dfOld = review
     df = review[["open_response"]]
 
@@ -155,7 +141,7 @@ def topicosTest(review, diccionario):
 
     return df
 
-def topicosTrain(df, num_Topics):
+def topicosTrain(df, num_Topics, alfa, beta):
     # ---> Parte 1: https://elmundodelosdatos.com/topic-modeling-gensim-fundamentos-preprocesamiento-textos/
     #ruta = str(input("Introduce el path relativo (EJ: ./datasets/nombre.csv) :"))
     dfOld = df      #guardamos aqui las columnas que no modificamos pero si necesitamos posteriormente
@@ -203,7 +189,7 @@ def topicosTrain(df, num_Topics):
     lda = LdaModel(corpus=cuerpo, id2word=diccionario,
                num_topics=num_Topics, random_state=42,
                chunksize=1000, passes=10,
-               alpha=0.2 , eta=0.9)
+               alpha=alfa , eta=beta)
 
     # Guardo el modelo
     file = open("./modelos/lda.sav", "wb")
@@ -217,4 +203,4 @@ def topicosTrain(df, num_Topics):
     df["newid"] = dfOld["newid"]    #guardamos los ids
     df["Chapter"] = dfOld["gs_text34"].apply(diseaseToChapter)  #guardamos los chapters
 
-    return df, diccionario
+    return df
