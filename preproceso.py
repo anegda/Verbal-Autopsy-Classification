@@ -85,6 +85,10 @@ def topicosReview(cuerpo, indice_review):
 
     return topicos
 
+def diseasesToChapters(df):
+    df["Chapter"] = df["gs_text34"].apply(diseaseToChapter)  # guardamos los chapters
+    return df
+
 def diseaseToChapter(disease):
     #NOS BASAMOS EN ICD-11 version 02/2022: https://icd.who.int/browse11/l-m/en
     dictDC = {"Other Non-communicable Diseases": 20,
@@ -145,7 +149,7 @@ def topicosTrain(df, num_Topics, alfa, beta):
     # ---> Parte 1: https://elmundodelosdatos.com/topic-modeling-gensim-fundamentos-preprocesamiento-textos/
     #ruta = str(input("Introduce el path relativo (EJ: ./datasets/nombre.csv) :"))
     dfOld = df      #guardamos aqui las columnas que no modificamos pero si necesitamos posteriormente
-    df = df[["open_response"]]
+    #df = df[["open_response"]]
 
     # 1.- Limpiamos (quitar caracteres especiaes, minúsculas...)
     df["Tokens"] = df.open_response.apply(limpiar_texto)
@@ -199,8 +203,4 @@ def topicosTrain(df, num_Topics, alfa, beta):
     for i in range(len(documents)):
         topicos.append(topicosReview(cuerpo, i))
     df["Topicos"] = topicos
-
-    df["newid"] = dfOld["newid"]    #guardamos los ids
-    df["Chapter"] = dfOld["gs_text34"].apply(diseaseToChapter)  #guardamos los chapters
-
     return df

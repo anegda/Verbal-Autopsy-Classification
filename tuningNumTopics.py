@@ -158,5 +158,5 @@ if 1 == 1:
                     model_results['Coherence'].append(cv)
 
                     pbar.update(1)
-    pd.DataFrame(model_results).to_csv('Resultados/lda_tuning_results(Ane)(40)(Impares).csv', index=False)
+    pd.DataFrame(model_results).to_csv('Resultados/lda_tuning_results.csv', index=False)
     pbar.close()

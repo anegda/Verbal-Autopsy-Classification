@@ -4,17 +4,48 @@ pd.options.mode.chained_assignment = None
 import evaluacion
 import preproceso
 import pickle
+from imblearn.over_sampling import RandomOverSampler
+from sklearn.model_selection import train_test_split
+import numpy as np
 
-def LDA_Flair():
+def apartadoComun():
+    """Esto es lo mismo para todos los modelos.
+    Hacemos el overSample, el split_train_test, etc."""
     f = "datasets/train.csv"
     df = pd.read_csv(f)
+    # ESTAS COLUMNAS (en principio) NO SIRVEN PERO PODRÍAMOS USARLAS EN UN FUTURO PARA SEGMENTAR
+    # Y VER COMO APRENDEN NUESTROS MODELOS EN DISTINTOS RANGOS DE EDADES, SEXOS, ETC.
+    df = df.drop('Unnamed: 0', axis=1)
+    df = df.drop('module', axis=1)
+    df = df.drop('age', axis=1)
+    df = df.drop('sex', axis=1)
+    df = df.drop('site', axis=1)
+    df = preproceso.diseasesToChapters(df)
+    df = df.drop('gs_text34', axis=1)
 
-    df = preproceso.topicosTrain(df, 26, 0.2, 0.9)
-    df.to_csv('Resultados/ResultadosPreproceso.csv')
+    print(df.head(5))       #IMPRIMIMOS 5
+    # Esquema de validación método holdout
+    # TODO: PROBAR bootstrapping
+    dfTrain, dfTest = train_test_split(df, test_size=0.2, random_state=42, stratify=df[['Chapter']])
+
+    #No están igualmente distribuidas y hay pocas instancias => oversampling
+    X_train = dfTrain.drop('Chapter', axis=1)
+    Y_train = np.array(dfTrain['Chapter'])
+    ros = RandomOverSampler(random_state=42, sampling_strategy=0.5)#TODO: MIRAR EL USO DE DICT
+    X_train, Y_train = ros.fit_resample(X_train, Y_train)
+
+    X_train['Chapter'] = Y_train
+    print(X_train['Chapter'].value_counts())
+    X_train.to_csv("Resultados/Prueba.csv")
+    return df
+
+def LDA_Flair():
+    df = apartadoComun()
+
+    #df = preproceso.topicosTrain(df, 26, 0.2, 0.9)
+    #df.to_csv('Resultados/ResultadosPreproceso.csv')
 
     #Nos quedamos unicamente con las columnas que nos interesan
-
-    print(df.head(10))
     return 0
 
 def WE_Flair():
