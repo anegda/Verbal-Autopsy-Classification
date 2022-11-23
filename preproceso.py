@@ -11,6 +11,12 @@ from nltk.tokenize import ToktokTokenizer
 import gensim.corpora
 from gensim.corpora import Dictionary
 from gensim.models import LdaModel
+from gensim.models import Word2Vec
+from gensim.models.doc2vec import Doc2Vec, TaggedDocument
+from gensim.test.utils import get_tmpfile
+
+import texthero as hero
+from texthero import preprocessing
 
 import seaborn as sns
 import pandas as pd
@@ -20,8 +26,8 @@ from sklearn.feature_extraction.text import CountVectorizer
 
 import numpy as np
 
+# NECESARIOS PARA LA LIMPIEZA DE DATOS
 nltk.download("stopwords")
-
 STOPWORDS = set(stopwords.words("english"))
 wnl = WordNetLemmatizer()
 stemmer = SnowballStemmer("english")
@@ -147,9 +153,6 @@ def topicosTest(review, diccionario):
 
 def topicosTrain(df, num_Topics, alfa, beta):
     # ---> Parte 1: https://elmundodelosdatos.com/topic-modeling-gensim-fundamentos-preprocesamiento-textos/
-    #ruta = str(input("Introduce el path relativo (EJ: ./datasets/nombre.csv) :"))
-    dfOld = df      #guardamos aqui las columnas que no modificamos pero si necesitamos posteriormente
-    #df = df[["open_response"]]
 
     # 1.- Limpiamos (quitar caracteres especiaes, minúsculas...)
     df["Tokens"] = df.open_response.apply(limpiar_texto)
@@ -203,4 +206,55 @@ def topicosTrain(df, num_Topics, alfa, beta):
     for i in range(len(documents)):
         topicos.append(topicosReview(cuerpo, i))
     df["Topicos"] = topicos
+
+    return df
+
+def embeddingsTrain(df):
+    #TODO: Comparar wordembeddings pre-entrenados / custom
+
+    #Tutorial: https://towardsdatascience.com/how-to-vectorize-text-in-dataframes-for-nlp-tasks-3-simple-techniques-82925a5600db
+
+    #PROBAMOS CON OTRA LIMPIEZA DE DATOS
+    custom_pipeline = [#preprocessing.fillna,    #se supone que no hay casillas vacías
+                       preprocessing.lowercase,
+                       preprocessing.remove_whitespace,
+                       preprocessing.remove_diacritics,
+                       preprocessing.remove_punctuation,
+                       preprocessing.remove_digits
+                       #preprocessing.remove_stopwords()
+                       ]
+
+    # Limpiamos el texto
+    df['clean_text'] = hero.clean(df['open_response'], custom_pipeline)
+
+    # TODO: mirar diferencias entre DOC2VEC y WORD2VEC
+
+    # Tokenizamos
+    card_docs = [TaggedDocument(doc.split(' '), [i]) for i, doc in enumerate(df.clean_text)]
+
+    # Inicializamos modelo
+    model = Doc2Vec(vector_size=64, min_count=1, epochs=20)
+
+    # Construimos vocabulario
+    model.build_vocab(card_docs)
+
+    # Entrenamos el modelo
+    model.train(card_docs, total_examples=model.corpus_count, epochs=model.epochs)
+
+    # Exportamos el modelo entrenado con pickle
+    fname = get_tmpfile("my_doc2vec_model")
+    model.save(fname)
+    # model = Doc2Vec.load(fname)
+
+    file = open("./modelos/embeddings.sav", "wb")
+    pickle.dump(model, file)
+    file.close()
+
+    # Generamos los vectores
+    card2vec = [model.infer_vector((df['clean_text'][i].split(' '))) for i in range(0, len(df['clean_text']))]
+
+    # Añadimos al dataframe los vectores generados
+    dtv = np.array(card2vec).tolist()
+    df['card2vec'] = dtv
+
     return df
