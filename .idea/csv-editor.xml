@@ -10,6 +10,13 @@
             </Attribute>
           </value>
         </entry>
+        <entry key="/Resultados/ResultadosPreprocesoEmbeddings.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
         <entry key="/Resultados/lda_tuning_results.csv">
           <value>
             <Attribute>

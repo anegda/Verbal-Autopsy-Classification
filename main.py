@@ -31,7 +31,7 @@ def apartadoComun():
     #No están igualmente distribuidas y hay pocas instancias => oversampling
     X_train = dfTrain.drop('Chapter', axis=1)
     Y_train = np.array(dfTrain['Chapter'])
-    ros = RandomOverSampler(random_state=42, sampling_strategy=0.5)#TODO: MIRAR EL USO DE DICT
+    ros = RandomOverSampler(random_state=42) #TODO: MIRAR EL USO DE DICT
     X_train, Y_train = ros.fit_resample(X_train, Y_train)
 
     X_train['Chapter'] = Y_train
@@ -42,13 +42,18 @@ def apartadoComun():
 def LDA_Flair():
     df = apartadoComun()
 
-    #df = preproceso.topicosTrain(df, 26, 0.2, 0.9)
-    #df.to_csv('Resultados/ResultadosPreproceso.csv')
+    df = preproceso.topicosTrain(df, 26, 0.2, 0.9)
+    df.to_csv('Resultados/ResultadosPreprocesoLDA.csv')
 
     #Nos quedamos unicamente con las columnas que nos interesan
     return 0
 
 def WE_Flair():
+    df = apartadoComun()
+
+    df = preproceso.embeddingsTrain(df)
+    df.to_csv('Resultados/ResultadosPreprocesoEmbeddings.csv')
+
     return 0
 
 def LDA_Bert():
@@ -83,12 +88,11 @@ def main():
     if int(eleccion) == 1:
         print("Ha elegido LDA Topic Modeling + Flair")
         LDA_Flair()
-        #main()
-        return 0
+        main()
 
     elif int(eleccion) == 2:
         print("Ha elegido WordEmbeddings + Flair")
-        # Llamada al método
+        WE_Flair()
         main()
 
     elif int(eleccion) == 3:

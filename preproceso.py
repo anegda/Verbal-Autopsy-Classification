@@ -226,6 +226,7 @@ def embeddingsTrain(df):
 
     # Limpiamos el texto
     df['clean_text'] = hero.clean(df['open_response'], custom_pipeline)
+    df["clean_text"] = df.clean_text.apply(eliminar_palabras_concretas)
 
     # TODO: mirar diferencias entre DOC2VEC y WORD2VEC
 
@@ -242,18 +243,36 @@ def embeddingsTrain(df):
     model.train(card_docs, total_examples=model.corpus_count, epochs=model.epochs)
 
     # Exportamos el modelo entrenado con pickle
-    fname = get_tmpfile("my_doc2vec_model")
+    fname = "modelos/my_doc2vec_model"
     model.save(fname)
-    # model = Doc2Vec.load(fname)
-
-    file = open("./modelos/embeddings.sav", "wb")
-    pickle.dump(model, file)
-    file.close()
 
     # Generamos los vectores
     card2vec = [model.infer_vector((df['clean_text'][i].split(' '))) for i in range(0, len(df['clean_text']))]
 
     # Añadimos al dataframe los vectores generados
+    dtv = np.array(card2vec).tolist()
+    df['card2vec'] = dtv
+
+    return df
+
+def embeddingsTest(df):
+
+    custom_pipeline = [#preprocessing.fillna,    #se supone que no hay casillas vacías
+                       preprocessing.lowercase,
+                       preprocessing.remove_whitespace,
+                       preprocessing.remove_diacritics,
+                       preprocessing.remove_punctuation,
+                       preprocessing.remove_digits
+                       #preprocessing.remove_stopwords()
+                       ]
+
+    # Limpiamos el texto
+    df['clean_text'] = hero.clean(df['open_response'], custom_pipeline)
+    df["clean_text"] = df.clean_text.apply(eliminar_palabras_concretas)
+
+    model = Doc2Vec.load("modelos/my_doc2vec_model")
+
+    card2vec = [model.infer_vector((df['clean_text'][i].split(' '))) for i in range(0, len(df['clean_text']))]
     dtv = np.array(card2vec).tolist()
     df['card2vec'] = dtv
 
