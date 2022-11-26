@@ -3,6 +3,8 @@ import pandas as pd
 pd.options.mode.chained_assignment = None
 import evaluacion
 import preproceso
+import modeloFlair
+
 import pickle
 from imblearn.over_sampling import RandomOverSampler
 from sklearn.model_selection import train_test_split
@@ -21,40 +23,46 @@ def apartadoComun():
     df = df.drop('sex', axis=1)
     df = df.drop('site', axis=1)
     df = preproceso.diseasesToChapters(df)
-    df = df.drop('gs_text34', axis=1)
 
     print(df.head(5))       #IMPRIMIMOS 5
     # Esquema de validación método holdout
-    # TODO: PROBAR bootstrapping
-    dfTrain, dfTest = train_test_split(df, test_size=0.2, random_state=42, stratify=df[['Chapter']])
+    dfTrain, dfDev = train_test_split(df, test_size=0.2, random_state=42, stratify=df[['Chapter']])
 
-    #No están igualmente distribuidas y hay pocas instancias => oversampling
+    # Separamos en atributos y clases
     X_train = dfTrain.drop('Chapter', axis=1)
     Y_train = np.array(dfTrain['Chapter'])
-    ros = RandomOverSampler(random_state=42) #TODO: MIRAR EL USO DE DICT
+
+    # No están igualmente distribuidas y hay pocas instancias => oversampling
+    distribucion = {1: 725, 2:245, 5:245, 11:573, 12:497, 13:245, 16:245, 18:819, 20:276, 22:245, 23:545}   #MINIMO LAS CLASES MINORITARIAS SON UN 30% DE LA CLASE MAYORITARIA
+    ros = RandomOverSampler(random_state=42, sampling_strategy=distribucion)
     X_train, Y_train = ros.fit_resample(X_train, Y_train)
 
     X_train['Chapter'] = Y_train
-    print(X_train['Chapter'].value_counts())
-    X_train.to_csv("Resultados/Prueba.csv")
-    return df
+    X_train.to_csv("corpus/train.csv")
 
+    # Guardamos el dev creado
+    dfDev.to_csv("corpus/dev.csv")
+
+    # Realizamos parecido con el test
+    fTest = "datasets/test.csv"
+    dfTest = pd.read_csv(fTest)
+    dfTest = dfTest.drop('module', axis=1)
+    dfTest = dfTest.drop('age', axis=1)
+    dfTest = dfTest.drop('sex', axis=1)
+    dfTest = dfTest.drop('site', axis=1)
+    dfTest["Chapter"] = np.nan
+    dfTest.to_csv("corpus/test.csv")
+
+    return X_train
 def LDA_Flair():
-    df = apartadoComun()
-
-    df = preproceso.topicosTrain(df, 26, 0.2, 0.9)
-    df.to_csv('Resultados/ResultadosPreprocesoLDA.csv')
-
-    #Nos quedamos unicamente con las columnas que nos interesan
     return 0
 
 def WE_Flair():
     df = apartadoComun()
 
     df = preproceso.wordEmbeddingsTrain(df)
-    #df.to_csv('Resultados/ResultadosPreprocesoEmbeddings.csv')
 
-
+    modeloFlair.trainFlair(df)
     return 0
 
 def LDA_Bert():
