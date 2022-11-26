@@ -209,32 +209,33 @@ def topicosTrain(df, num_Topics, alfa, beta):
 
     return df
 
-def embeddingsTrain(df):
-    #TODO: Comparar wordembeddings pre-entrenados / custom
-
+def docEmbeddingsTrain(df):
     #Tutorial: https://towardsdatascience.com/how-to-vectorize-text-in-dataframes-for-nlp-tasks-3-simple-techniques-82925a5600db
 
     #PROBAMOS CON OTRA LIMPIEZA DE DATOS
     custom_pipeline = [#preprocessing.fillna,    #se supone que no hay casillas vacías
                        preprocessing.lowercase,
-                       preprocessing.remove_whitespace,
                        preprocessing.remove_diacritics,
                        preprocessing.remove_punctuation,
-                       preprocessing.remove_digits
-                       #preprocessing.remove_stopwords()
+                       preprocessing.remove_digits,
+                       preprocessing.remove_stopwords,
+                       preprocessing.remove_whitespace,
                        ]
 
     # Limpiamos el texto
     df['clean_text'] = hero.clean(df['open_response'], custom_pipeline)
+
+
+    tokenizer = ToktokTokenizer()
+    df["clean_text"] = df.clean_text.apply(tokenizer.tokenize)
+    df["clean_text"] = df.clean_text.apply(estemizar)
     df["clean_text"] = df.clean_text.apply(eliminar_palabras_concretas)
 
-    # TODO: mirar diferencias entre DOC2VEC y WORD2VEC
-
-    # Tokenizamos
-    card_docs = [TaggedDocument(doc.split(' '), [i]) for i, doc in enumerate(df.clean_text)]
+    card_docs = [TaggedDocument(doc, [i]) for i, doc in enumerate(df.clean_text)]
+    print(card_docs)
 
     # Inicializamos modelo
-    model = Doc2Vec(vector_size=64, min_count=1, epochs=20)
+    model = Doc2Vec(vector_size=200, min_count=1, epochs=20)
 
     # Construimos vocabulario
     model.build_vocab(card_docs)
@@ -247,7 +248,7 @@ def embeddingsTrain(df):
     model.save(fname)
 
     # Generamos los vectores
-    card2vec = [model.infer_vector((df['clean_text'][i].split(' '))) for i in range(0, len(df['clean_text']))]
+    card2vec = [model.infer_vector((df['clean_text'][i])) for i in range(0, len(df['clean_text']))]
 
     # Añadimos al dataframe los vectores generados
     dtv = np.array(card2vec).tolist()
@@ -255,25 +256,70 @@ def embeddingsTrain(df):
 
     return df
 
-def embeddingsTest(df):
+def docEmbeddingsTest(df):
 
+    #PROBAMOS CON OTRA LIMPIEZA DE DATOS
     custom_pipeline = [#preprocessing.fillna,    #se supone que no hay casillas vacías
                        preprocessing.lowercase,
-                       preprocessing.remove_whitespace,
                        preprocessing.remove_diacritics,
                        preprocessing.remove_punctuation,
-                       preprocessing.remove_digits
-                       #preprocessing.remove_stopwords()
+                       preprocessing.remove_digits,
+                       preprocessing.remove_stopwords,
+                       preprocessing.remove_whitespace,
                        ]
 
     # Limpiamos el texto
     df['clean_text'] = hero.clean(df['open_response'], custom_pipeline)
+
+
+    tokenizer = ToktokTokenizer()
+    df["clean_text"] = df.clean_text.apply(tokenizer.tokenize)
+    df["clean_text"] = df.clean_text.apply(estemizar)
     df["clean_text"] = df.clean_text.apply(eliminar_palabras_concretas)
 
     model = Doc2Vec.load("modelos/my_doc2vec_model")
 
-    card2vec = [model.infer_vector((df['clean_text'][i].split(' '))) for i in range(0, len(df['clean_text']))]
+    card2vec = [model.infer_vector((df['clean_text'][i])) for i in range(0, len(df['clean_text']))]
     dtv = np.array(card2vec).tolist()
     df['card2vec'] = dtv
+
+    return df
+
+def wordEmbeddingsTrain(df):
+    #Tutorial: https://towardsdatascience.com/how-to-vectorize-text-in-dataframes-for-nlp-tasks-3-simple-techniques-82925a5600db
+
+    #PROBAMOS CON OTRA LIMPIEZA DE DATOS
+    #PROBAMOS CON OTRA LIMPIEZA DE DATOS
+    custom_pipeline = [#preprocessing.fillna,    #se supone que no hay casillas vacías
+                       preprocessing.lowercase,
+                       preprocessing.remove_diacritics,
+                       preprocessing.remove_punctuation,
+                       preprocessing.remove_digits,
+                       preprocessing.remove_stopwords,
+                       preprocessing.remove_whitespace,
+                       ]
+
+    # Limpiamos el texto
+    df['clean_text'] = hero.clean(df['open_response'], custom_pipeline)
+
+
+    tokenizer = ToktokTokenizer()
+    df["clean_text"] = df.clean_text.apply(tokenizer.tokenize)
+    df["clean_text"] = df.clean_text.apply(estemizar)
+    df["clean_text"] = df.clean_text.apply(eliminar_palabras_concretas)
+
+    card_docs = [row for row in df["clean_text"]]
+
+    # Inicializamos modelo
+    model = Word2Vec(vector_size=200, min_count=1, epochs=20)
+
+    # Construimos vocabulario
+    model.build_vocab(card_docs)
+
+    # Entrenamos el modelo
+    model.train(card_docs, total_examples=model.corpus_count, epochs=model.epochs)
+
+    fname = "modelos/my_word_embeddings"
+    model.save(fname)
 
     return df

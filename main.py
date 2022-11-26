@@ -51,8 +51,9 @@ def LDA_Flair():
 def WE_Flair():
     df = apartadoComun()
 
-    df = preproceso.embeddingsTrain(df)
-    df.to_csv('Resultados/ResultadosPreprocesoEmbeddings.csv')
+    df = preproceso.wordEmbeddingsTrain(df)
+    #df.to_csv('Resultados/ResultadosPreprocesoEmbeddings.csv')
+
 
     return 0
 

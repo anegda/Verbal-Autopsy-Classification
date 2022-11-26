@@ -3,6 +3,8 @@ from flair.datasets import ClassificationCorpus, CSVClassificationCorpus
 from flair.embeddings import WordEmbeddings, FlairEmbeddings, FastTextEmbeddings, DocumentRNNEmbeddings
 from flair.models import TextClassifier
 from flair.trainers import ModelTrainer
+import gensim.downloader as api
+from bertopic import BERTopic
 
 def modeloFlair(df):
     #NOS QUEDAMOS UNICAMENTE CON LAS COLUMNAS QUE NECESITAMOS
@@ -14,8 +16,13 @@ def modeloFlair(df):
     corpus = CSVClassificationCorpus(data_folder, column_name_map, skip_header=True, delimiter=',')
     label_dict = corpus.make_label_dictionary(label_type="class")
 
+    #CUSTOM WORD EMBEDDINGS
+    ft = api.load('my_word_embeddings')
+    #topic_model = BERTopic(embedding_model=ft)
+
     #LISTA DE WORDEMBEDDINGS
     word_embeddings = [
+        WordEmbeddings('en-glove'),
         WordEmbeddings('en-crawl'),
         FlairEmbeddings('multi-X-fast'),
     ]
