@@ -16,9 +16,8 @@ def apartadoComun():
     f = "datasets/train.csv"
     df = pd.read_csv(f)
     # ESTAS COLUMNAS (en principio) NO SIRVEN PERO PODRÍAMOS USARLAS EN UN FUTURO PARA SEGMENTAR
-    # Y VER COMO APRENDEN NUESTROS MODELOS EN DISTINTOS RANGOS DE EDADES, SEXOS, ETC.
+    # Y VER COMO APRENDEN NUESTROS MODELOS EN DISTINTOS RANGOS DE EDADES, SEXOS, LUGARES, ETC.
     df = df.drop('Unnamed: 0', axis=1)
-    df = df.drop('module', axis=1)
     df = df.drop('age', axis=1)
     df = df.drop('sex', axis=1)
     df = df.drop('site', axis=1)
@@ -45,12 +44,15 @@ def apartadoComun():
 
     # Realizamos parecido con el test
     fTest = "datasets/test.csv"
+    fLabelsRaw = "datasets/raw+labels.csv"
     dfTest = pd.read_csv(fTest)
-    dfTest = dfTest.drop('module', axis=1)
-    dfTest = dfTest.drop('age', axis=1)
-    dfTest = dfTest.drop('sex', axis=1)
-    dfTest = dfTest.drop('site', axis=1)
-    dfTest["Chapter"] = np.nan
+    dfTestLabels = pd.read_csv(fLabelsRaw)
+
+    dfTest = dfTest[['newid','module','open_response']]
+
+    dfTestLabels = dfTestLabels[['newid', 'gs_text34', 'module']]
+    dfTest = pd.merge(dfTest, dfTestLabels, how="left", on=["newid","module"])
+    dfTest = preproceso.diseasesToChapters(dfTest)
     dfTest.to_csv("corpus/test.csv")
 
     return X_train
@@ -60,9 +62,9 @@ def LDA_Flair():
 def WE_Flair():
     df = apartadoComun()
 
-    df = preproceso.wordEmbeddingsTrain(df)
+    #df = preproceso.wordEmbeddingsTrain(df)
 
-    modeloFlair.trainFlair(df)
+    #modeloFlair.trainFlair(df)
     return 0
 
 def LDA_Bert():
