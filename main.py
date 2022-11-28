@@ -1,14 +1,14 @@
-import gensim.corpora
 import pandas as pd
 pd.options.mode.chained_assignment = None
-import evaluacion
-import preproceso
-import modeloFlair
-
-import pickle
 from imblearn.over_sampling import RandomOverSampler
 from sklearn.model_selection import train_test_split
 import numpy as np
+
+
+import preproceso
+import modeloFlair
+import modeloSpacy
+
 
 def apartadoComun():
     """Esto es lo mismo para todos los modelos.
@@ -59,31 +59,27 @@ def apartadoComun():
 def WE_Flair():
     df = apartadoComun()
 
-    #df = preproceso.wordEmbeddingsTrain(df)
+    df = preproceso.wordEmbeddingsTrain(df)
 
-    #modeloFlair.trainFlair(df)
+    modeloFlair.trainFlair(df)
     return 0
 
-def WE_Bert():
+def WE_Spacy():
+    df = apartadoComun()
+
+    preproceso.wordEmbeddingsTrain(df)
+
+    modeloSpacy.trainSpacy(1)
     return 0
 
 def main():
     print('''BIENVENIDO AL CLASIFICADOR DE VERBAL AUTOPSY
-    
-            Previamente hay que tener instaladas las siguientes librerías:
-                - pandas
-                - numpy
-                - matplotlib
-                - sklearn
-                - seaborn
-                - scikitplot
-                - nltk
-    
+       
             Pulse el número según lo que que desee ejecutar:
                 (1) LDA Topic Modeling + Flair
                 (2) WordEmbeddings + Flair 
-                (3) LDA Topic Modeling + Bert
-                (4) WordEmbeddings + Bert 
+                (3) LDA Topic Modeling + Spacy
+                (4) WordEmbeddings + Spacy 
                 (5) Salir
     
             By Ane García\n''')
@@ -101,12 +97,12 @@ def main():
         main()
 
     elif int(eleccion) == 3:
-        print("Ha elegido WordEmbeddings Custome + Bert")
+        print("Ha elegido WordEmbeddings Custome + Spacy")
         #Llamada al método
         main()
 
     elif int(eleccion) == 4:
-        print("Ha elegido WordEmbeddings + Bert")
+        print("Ha elegido WordEmbeddings + Spacy")
         # Llamada al método
         main()
 

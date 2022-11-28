@@ -319,7 +319,12 @@ def wordEmbeddingsTrain(df):
     # Entrenamos el modelo
     model.train(card_docs, total_examples=model.corpus_count, epochs=model.epochs)
 
+    # GUARDAMOS DE LAS DOS MANERAS
+    # PARA FLAIR
     fname = "modelos/my_word_embeddings"
     model.save(fname)
+
+    # PARA SPACY
+    model.wv.save_word2vec_format("modelos/my_word_embeddings.txt")
 
     return df
