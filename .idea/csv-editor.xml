@@ -45,13 +45,6 @@
             </Attribute>
           </value>
         </entry>
-        <entry key="/datasets/1_cleanPHMRC_VAI_redacted_free_text.csv">
-          <value>
-            <Attribute>
-              <option name="separator" value="," />
-            </Attribute>
-          </value>
-        </entry>
         <entry key="/datasets/test.csv">
           <value>
             <Attribute>

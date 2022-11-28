@@ -9,19 +9,19 @@ from bertopic import BERTopic
 def trainFlair(df):
     #CREAMOS EL CLASSIFCATION CORPUS:  https://github.com/flairNLP/flair/blob/master/resources/docs/TUTORIAL_6_CORPUS.md#reading-a-text-classification-dataset
     data_folder = "corpus/"
-    column_name_map = {2: "text", 4: "label_topic"}
+    column_name_map = {3: "text", 5: "label_topic"}
     corpus = CSVClassificationCorpus(data_folder, column_name_map, skip_header=True, delimiter=',', label_type="class")
     label_dict = corpus.make_label_dictionary(label_type="class")
 
     #CUSTOM WORD EMBEDDINGS
-    #ft = api.load('my_word_embeddings')
+    ft = api.load('my_word_embeddings')
     #topic_model = BERTopic(embedding_model=ft)
 
     #LISTA DE WORDEMBEDDINGS
     word_embeddings = [
         WordEmbeddings('en-glove'),
         WordEmbeddings('en-crawl'),
-        FlairEmbeddings('multi-X-fast'),
+        # FlairEmbeddings('multi-X-fast'),
     ]
 
     #INICIALIZAMOS EL DOCUMENT EMBEDDINGS PASANDOLE UNA LISTA DE LOS WORD EMBEDDINGS
@@ -39,5 +39,4 @@ def trainFlair(df):
     trainer = ModelTrainer(classifier, corpus)
 
     #EMPEZAMOS EL ENTRENAMIENTO
-    trainer.train('modelos/flair-VA', mini_batch_size=50, learning_rate=0.001, max_epochs=100)
-
+    trainer.train('modelos/flair-VA', mini_batch_size=50, learning_rate=0.001, max_epochs=50, train_with_dev=True)
