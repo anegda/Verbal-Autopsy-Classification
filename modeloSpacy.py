@@ -14,8 +14,44 @@ from itertools import chain
 
 from sklearn.metrics import classification_report
 
+
+def load_data_spacy(df):
+
+    print(df['Chapter'].value_counts())
+
+    texts = df['open_response'].tolist()
+    cats = df['Chapter'].tolist()
+    final_cats = []
+    labels = ['1', '2', '5', '11', '12', '13', '16', '18', '20', '22', '23']
+    for cat in cats:
+        cat_list = {}
+
+        if cat == '1':
+            cat_list['1'] = 1
+            cat_list['2'] = 0
+            cat_list['5'] = 0
+            cat_list['11'] = 0
+            cat_list['12'] = 0
+            cat_list['13'] = 0
+            cat_list['16'] = 0
+            cat_list['18'] = 0
+            cat_list['20'] = 0
+            cat_list['22'] = 0
+            cat_list['23'] = 0
+        elif cat == '2':
+            cat_list['AGAINST'] = 0
+            cat_list['FAVOR'] = 1
+            cat_list['NONE'] = 0
+        else:
+            cat_list['AGAINST'] = 0
+            cat_list['FAVOR'] = 0
+            cat_list['NONE'] = 1
+        final_cats.append(cat_list)
+
+    train_data = list(zip(texts, [{"cats": cats} for cats in final_cats]))
+    return train_data, texts, cats
+
 def load_word_vectors(model_name, word_vectors):
-    import spacy
     import subprocess
     import sys
     subprocess.run([sys.executable,
@@ -29,7 +65,6 @@ def load_word_vectors(model_name, word_vectors):
                         ]
                     )
     print (f"New spaCy model created with word vectors. File: {model_name}")
-
 
 def Sort(sub_li):
   return(sorted(sub_li, key = lambda x: x[1],reverse=True))
@@ -46,8 +81,7 @@ def evaluate(tokenizer, textcat, test_texts, test_cats):
             catList.append(score[0])
         preds.append(catList[0])
 
-    # labels = ['AGAINST', 'FAVOR']
-    labels = ['fake', 'legit']
+    labels = ['1', '2', '5', '11', '12', '13', '16', '18', '20', '22', '23']
     print(classification_report(test_cats, preds, labels=labels))
 
 def trainSpacy(eleccion):
@@ -84,7 +118,14 @@ def trainSpacy(eleccion):
         nlp = spacy.load('modelos/spacy/custome_embeddings')    #our custome wordvectors
 
     # Añadimos el pipe de textcat a nuestro nlp
-    textcat = nlp.get_pipe("textcat")
+    # nlp.create_pipe works for built-ins that are registered with spaCy
+    if "textcat" not in nlp.pipe_names:
+        textcat = nlp.create_pipe(
+            "textcat", config={"exclusive_classes": True, "architecture": "simple_cnn"}
+        )
+        nlp.add_pipe(textcat, last=True)
+    else:
+        textcat = nlp.get_pipe("textcat")
 
     # Añadimos la etiqueta al text classifier
     textcat.add_label('1')
@@ -110,7 +151,7 @@ def trainSpacy(eleccion):
 
         for i in range(200):
             print('EPOCH: ' + str(i))
-            start_time = time.clock()
+            start_time = time.process_time()
             losses = {}
             # batch up the examples using spaCy's minibatch
             random.shuffle(train_data)
@@ -121,7 +162,7 @@ def trainSpacy(eleccion):
             with textcat.model.use_params(optimizer.averages):
                 # evaluate on the test data
                 evaluate(nlp.tokenizer, textcat, dev_text, dev_cat)
-            print('Elapsed time' + str(time.clock() - start_time) + "seconds")
+            print('Elapsed time' + str(time.process_time() - start_time) + "seconds")
         with nlp.use_params(optimizer.averages):
             filepath = "modelos/spacy/modeloSpacy"
             nlp.to_disk(filepath)

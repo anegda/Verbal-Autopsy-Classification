@@ -56,7 +56,7 @@ def apartadoComun():
     dfTest.to_csv("corpus/test.csv")
 
     return X_train
-def WE_Flair():
+def WE_Flair(eleccion):
     df = apartadoComun()
 
     df = preproceso.wordEmbeddingsTrain(df)
@@ -64,22 +64,22 @@ def WE_Flair():
     modeloFlair.trainFlair(df)
     return 0
 
-def WE_Spacy():
+def WE_Spacy(eleccion):
     df = apartadoComun()
 
     preproceso.wordEmbeddingsTrain(df)
 
-    modeloSpacy.trainSpacy(1)
+    modeloSpacy.trainSpacy(eleccion)
     return 0
 
 def main():
     print('''BIENVENIDO AL CLASIFICADOR DE VERBAL AUTOPSY
        
             Pulse el número según lo que que desee ejecutar:
-                (1) LDA Topic Modeling + Flair
-                (2) WordEmbeddings + Flair 
-                (3) LDA Topic Modeling + Spacy
-                (4) WordEmbeddings + Spacy 
+                (1) WordEmbeddings + Flair
+                (2) Custome WordEmbeddings + Flair 
+                (3) WordEmbeddings + Spacy
+                (4) Custome WordEmbeddings + Spacy 
                 (5) Salir
     
             By Ane García\n''')
@@ -88,22 +88,22 @@ def main():
 
     if int(eleccion) == 1:
         print("Ha elegido WordEmbeddings Custome + Flair")
-        WE_Flair()
+        WE_Flair(2)
         main()
 
     elif int(eleccion) == 2:
         print("Ha elegido WordEmbeddings + Flair")
-        WE_Flair()
+        WE_Flair(1)
         main()
 
     elif int(eleccion) == 3:
         print("Ha elegido WordEmbeddings Custome + Spacy")
-        #Llamada al método
+        WE_Spacy(2)
         main()
 
     elif int(eleccion) == 4:
         print("Ha elegido WordEmbeddings + Spacy")
-        # Llamada al método
+        WE_Spacy(1)
         main()
 
     elif int(eleccion) == 5:
