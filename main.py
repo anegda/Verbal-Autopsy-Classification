@@ -61,7 +61,7 @@ def WE_Flair():
 
     #df = preproceso.wordEmbeddingsTrain(df)
 
-    modeloFlair.trainFlair(df)
+    #modeloFlair.trainFlair(df)
     return 0
 
 def WE_Bert():
