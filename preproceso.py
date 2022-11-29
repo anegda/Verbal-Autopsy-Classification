@@ -27,7 +27,7 @@ from sklearn.feature_extraction.text import CountVectorizer
 import numpy as np
 
 # NECESARIOS PARA LA LIMPIEZA DE DATOS
-nltk.download("stopwords")
+nltk.download("stopwords", quiet=True)
 STOPWORDS = set(stopwords.words("english"))
 wnl = WordNetLemmatizer()
 stemmer = SnowballStemmer("english")

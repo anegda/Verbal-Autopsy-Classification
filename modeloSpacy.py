@@ -21,34 +21,20 @@ def load_data_spacy(df):
 
     texts = df['open_response'].tolist()
     cats = df['Chapter'].tolist()
+
     final_cats = []
-    labels = ['1', '2', '5', '11', '12', '13', '16', '18', '20', '22', '23']
+    labels = [1, 2, 5, 11, 12, 13, 16, 18, 20, 22, 23]
     for cat in cats:
         cat_list = {}
-
-        if cat == '1':
-            cat_list['1'] = 1
-            cat_list['2'] = 0
-            cat_list['5'] = 0
-            cat_list['11'] = 0
-            cat_list['12'] = 0
-            cat_list['13'] = 0
-            cat_list['16'] = 0
-            cat_list['18'] = 0
-            cat_list['20'] = 0
-            cat_list['22'] = 0
-            cat_list['23'] = 0
-        elif cat == '2':
-            cat_list['AGAINST'] = 0
-            cat_list['FAVOR'] = 1
-            cat_list['NONE'] = 0
-        else:
-            cat_list['AGAINST'] = 0
-            cat_list['FAVOR'] = 0
-            cat_list['NONE'] = 1
+        for x in labels:
+            if cat == x:
+                cat_list[str(x)] = 1
+            else:
+                cat_list[str(x)]= 0
         final_cats.append(cat_list)
 
     train_data = list(zip(texts, [{"cats": cats} for cats in final_cats]))
+    cats = [str(x) for x in cats]
     return train_data, texts, cats
 
 def load_word_vectors(model_name, word_vectors):
@@ -82,6 +68,8 @@ def evaluate(tokenizer, textcat, test_texts, test_cats):
         preds.append(catList[0])
 
     labels = ['1', '2', '5', '11', '12', '13', '16', '18', '20', '22', '23']
+    print(test_cats)
+    print(preds)
     print(classification_report(test_cats, preds, labels=labels))
 
 def trainSpacy(eleccion):
@@ -93,24 +81,19 @@ def trainSpacy(eleccion):
     print("---Read data---")
 
     # -----------------train file-------------------------
-    train_data = pd.read_csv(fTrain)
-
-    train_text = train_data.open_response.values
-    train_category = train_data.Chapter.values
+    train_df = pd.read_csv(fTrain)
+    train_data, train_text, train_cats = load_data_spacy(train_df)
 
     # -----------------Dev file-------------------------
-    dev_data = pd.read_csv(fDev)
-
-    dev_text = dev_data.open_response.values
-    dev_cat = dev_data.Chapter.values
+    dev_df = pd.read_csv(fDev)
+    dev_data, dev_text, dev_cats = load_data_spacy(dev_df)
 
     # -----------------test file-------------------------
-    test_data = pd.read_csv(fTest)
-
-    test_text = test_data.open_response.values
-    test_category = test_data.Chapter.values
+    test_df = pd.read_csv(fTest)
+    test_data, test_text, test_cats = load_data_spacy(test_df)
 
     print("---Complete reading data---")
+
     if eleccion==1:
         nlp = spacy.load('en_core_web_sm')      #pretrained wordvectors
     else:
@@ -149,7 +132,7 @@ def trainSpacy(eleccion):
         print("Training the model...")
         print("{:^5}\t{:^5}\t{:^5}\t{:^5}".format("LOSS", "P", "R", "F"))
 
-        for i in range(200):
+        for i in range(1):
             print('EPOCH: ' + str(i))
             start_time = time.process_time()
             losses = {}
@@ -161,7 +144,7 @@ def trainSpacy(eleccion):
                 nlp.update(texts, annotations, sgd=optimizer, drop=0.3, losses=losses)
             with textcat.model.use_params(optimizer.averages):
                 # evaluate on the test data
-                evaluate(nlp.tokenizer, textcat, dev_text, dev_cat)
+                evaluate(nlp.tokenizer, textcat, dev_text, dev_cats)
             print('Elapsed time' + str(time.process_time() - start_time) + "seconds")
         with nlp.use_params(optimizer.averages):
             filepath = "modelos/spacy/modeloSpacy"
