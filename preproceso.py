@@ -138,7 +138,6 @@ def wordEmbeddingsTrain(df):
     #Tutorial: https://towardsdatascience.com/how-to-vectorize-text-in-dataframes-for-nlp-tasks-3-simple-techniques-82925a5600db
 
     #PROBAMOS CON OTRA LIMPIEZA DE DATOS
-    #PROBAMOS CON OTRA LIMPIEZA DE DATOS
     custom_pipeline = [#preprocessing.fillna,    #se supone que no hay casillas vacías
                        preprocessing.lowercase,
                        preprocessing.remove_diacritics,
@@ -160,7 +159,7 @@ def wordEmbeddingsTrain(df):
     card_docs = [row for row in df["clean_text"]]
 
     # Inicializamos modelo
-    model = Word2Vec(vector_size=200, min_count=1, epochs=20)
+    model = Word2Vec(vector_size=300, min_count=10, epochs=100)
 
     # Construimos vocabulario
     model.build_vocab(card_docs)

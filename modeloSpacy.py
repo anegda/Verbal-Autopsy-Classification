@@ -132,7 +132,7 @@ def trainSpacy(eleccion):
         print("Training the model...")
         print("{:^5}\t{:^5}\t{:^5}\t{:^5}".format("LOSS", "P", "R", "F"))
 
-        for i in range(1):
+        for i in range(125):      #NUMERO DE EPOCHS
             print('EPOCH: ' + str(i))
             start_time = time.process_time()
             losses = {}
