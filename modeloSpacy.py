@@ -97,7 +97,7 @@ def trainSpacy(eleccion):
     if eleccion==1:
         nlp = spacy.load('en_core_web_sm')      #pretrained wordvectors
     else:
-        load_word_vectors("modelos/spacy/custome_embeddings","modelos/my_word_embeddings.txt")
+        load_word_vectors("modelos/spacy/custome_embeddings","modelos/Embeddings/my_word_embeddings.txt")
         nlp = spacy.load('modelos/spacy/custome_embeddings')    #our custome wordvectors
 
     # Añadimos el pipe de textcat a nuestro nlp
