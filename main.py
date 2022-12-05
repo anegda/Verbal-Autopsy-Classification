@@ -59,9 +59,9 @@ def apartadoComun():
 def WE_Flair(eleccion):
     df = apartadoComun()
 
-    df = preproceso.wordEmbeddingsTrain(df)
+    preproceso.wordEmbeddingsTrain(df)
 
-    modeloFlair.trainFlair(df)
+    modeloFlair.trainFlair(eleccion)
     return 0
 
 def WE_Spacy(eleccion):
@@ -87,23 +87,23 @@ def main():
     eleccion = input()
 
     if int(eleccion) == 1:
-        print("Ha elegido WordEmbeddings Custome + Flair")
-        WE_Flair(2)
-        main()
-
-    elif int(eleccion) == 2:
         print("Ha elegido WordEmbeddings + Flair")
         WE_Flair(1)
         main()
 
+    elif int(eleccion) == 2:
+        print("Ha elegido WordEmbeddings Custome + Flair")
+        WE_Flair(2)
+        main()
+
     elif int(eleccion) == 3:
-        print("Ha elegido WordEmbeddings Custome + Spacy")
-        WE_Spacy(2)
+        print("Ha elegido WordEmbeddings + Spacy")
+        WE_Spacy(1)
         main()
 
     elif int(eleccion) == 4:
-        print("Ha elegido WordEmbeddings + Spacy")
-        WE_Spacy(1)
+        print("Ha elegido WordEmbeddings Custome + Spacy")
+        WE_Spacy(2)
         main()
 
     elif int(eleccion) == 5:
