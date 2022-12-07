@@ -24,6 +24,8 @@ def trainFlair(eleccion):
         ]
     else:
         word_embeddings = [
+            WordEmbeddings('en-glove'),
+            WordEmbeddings('en-crawl'),
             WordEmbeddings('modelos/Embeddings/word_embeddings_Flair')
         ]
 
