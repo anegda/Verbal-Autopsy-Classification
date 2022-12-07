@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 import re
 import string
+import readline
 
 from spacy.util import minibatch, compounding
 import sys
@@ -23,7 +24,7 @@ def load_data_spacy(df):
     cats = df['Chapter'].tolist()
 
     final_cats = []
-    labels = [1, 2, 5, 11, 12, 13, 16, 18, 20, 22, 23]
+    labels = [1, 2, 5, 8, 11, 12, 13, 16, 18, 20, 22, 23]
     for cat in cats:
         cat_list = {}
         for x in labels:
@@ -67,7 +68,7 @@ def evaluate(tokenizer, textcat, test_texts, test_cats):
             catList.append(score[0])
         preds.append(catList[0])
 
-    labels = ['1', '2', '5', '11', '12', '13', '16', '18', '20', '22', '23']
+    labels = ['1', '2', '5', '8','11', '12', '13', '16', '18', '20', '22', '23']
     print(test_cats)
     print(preds)
     print(classification_report(test_cats, preds, labels=labels))
@@ -114,6 +115,7 @@ def trainSpacy(eleccion):
     textcat.add_label('1')
     textcat.add_label('2')
     textcat.add_label('5')
+    textcat.add_label('8')
     textcat.add_label('11')
     textcat.add_label('12')
     textcat.add_label('13')
@@ -132,7 +134,7 @@ def trainSpacy(eleccion):
         print("Training the model...")
         print("{:^5}\t{:^5}\t{:^5}\t{:^5}".format("LOSS", "P", "R", "F"))
 
-        for i in range(125):      #NUMERO DE EPOCHS
+        for i in range(20):      #NUMERO DE EPOCHS
             print('EPOCH: ' + str(i))
             start_time = time.process_time()
             losses = {}
@@ -147,8 +149,11 @@ def trainSpacy(eleccion):
                 evaluate(nlp.tokenizer, textcat, dev_text, dev_cats)
             print('Elapsed time' + str(time.process_time() - start_time) + "seconds")
         with nlp.use_params(optimizer.averages):
-            filepath = "modelos/spacy/modeloSpacy"
+            filepath = "modelos/modeloSpacy"
             nlp.to_disk(filepath)
+
+    print('---EVALUANDO TEST...---')
+    evaluate(nlp.tokenizer, textcat, test_text, test_cats)
     return nlp
 
 
