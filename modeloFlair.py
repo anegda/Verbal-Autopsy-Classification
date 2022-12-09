@@ -44,4 +44,4 @@ def trainFlair(eleccion):
     trainer = ModelTrainer(classifier, corpus)
 
     #EMPEZAMOS EL ENTRENAMIENTO
-    trainer.train('modelos/flair-VA', mini_batch_size=50, learning_rate=0.01, max_epochs=125, train_with_dev=True)
+    trainer.train('modelos/flair-VA', mini_batch_size=50, learning_rate=0.01, max_epochs=200, train_with_dev=True)

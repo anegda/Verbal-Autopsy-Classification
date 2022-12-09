@@ -98,8 +98,8 @@ def trainSpacy(eleccion):
     if eleccion==1:
         nlp = spacy.load('en_core_web_sm')      #pretrained wordvectors
     else:
-        load_word_vectors("modelos/spacy/custome_embeddings","modelos/Embeddings/my_word_embeddings.txt")
-        nlp = spacy.load('modelos/spacy/custome_embeddings')    #our custome wordvectors
+        load_word_vectors("modelos/Embeddings/custome_embeddings","modelos/Embeddings/my_word_embeddings.txt")
+        nlp = spacy.load('modelos/Embeddings/custome_embeddings')    #our custome wordvectors
 
     # Añadimos el pipe de textcat a nuestro nlp
     # nlp.create_pipe works for built-ins that are registered with spaCy
@@ -149,7 +149,7 @@ def trainSpacy(eleccion):
                 evaluate(nlp.tokenizer, textcat, dev_text, dev_cats)
             print('Elapsed time' + str(time.process_time() - start_time) + "seconds")
         with nlp.use_params(optimizer.averages):
-            filepath = "modelos/modeloSpacy"
+            filepath = "modelos/Spacy-VA-Custome"
             nlp.to_disk(filepath)
 
     print('---EVALUANDO TEST...---')

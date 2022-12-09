@@ -1,5 +1,3 @@
-Training the model...
-LOSS 	  P  	  R  	  F  
 EPOCH: 0
               precision    recall  f1-score   support
 
