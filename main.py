@@ -1,4 +1,7 @@
 import pandas as pd
+
+import aleatorio
+
 pd.options.mode.chained_assignment = None
 from imblearn.over_sampling import RandomOverSampler
 from sklearn.model_selection import train_test_split
@@ -9,6 +12,7 @@ import preproceso
 import modeloFlair
 import modeloSpacy
 import baseline
+import aleatorio
 
 def apartadoComun():
     """Esto es lo mismo para todos los modelos.
@@ -81,7 +85,8 @@ def main():
                 (3) WordEmbeddings + Spacy
                 (4) Custome WordEmbeddings + Spacy 
                 (5) Baseline Gradient Boosting
-                (6) Salir
+                (6) Clasificador Aleatorio
+                (7) Salir
     
             By Ane García\n''')
 
@@ -110,7 +115,12 @@ def main():
     elif int(eleccion) == 5:
         baseline.baseline()
         return
+
     elif int(eleccion) == 6:
+        aleatorio.clasificarAleatoriamente()
+        return
+
+    elif int(eleccion) == 7:
         print("SALIENDO...")
         return
 
