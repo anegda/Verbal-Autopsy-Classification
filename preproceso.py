@@ -1,28 +1,21 @@
 import re
 
-import pickle
-
 import nltk
+import pandas as pd
 from nltk import WordNetLemmatizer
 from nltk.corpus import stopwords
 from nltk.stem import SnowballStemmer
 from nltk.tokenize import ToktokTokenizer
 
-import gensim.corpora
-from gensim.corpora import Dictionary
-from gensim.models import LdaModel
+from sklearn.feature_extraction.text import CountVectorizer
+
+import gensim
 from gensim.models import Word2Vec
 from gensim.models.doc2vec import Doc2Vec, TaggedDocument
-from gensim.test.utils import get_tmpfile
+
 
 import texthero as hero
 from texthero import preprocessing
-
-import seaborn as sns
-import pandas as pd
-import matplotlib.pyplot as plt
-
-from sklearn.feature_extraction.text import CountVectorizer
 
 import numpy as np
 
@@ -65,6 +58,10 @@ def eliminar_palabras_concretas(tokens):
 def estemizar(tokens):
     return [stemmer.stem(token) for token in tokens]
 
+def juntar(tokens):
+    document = " ".join(tokens)
+    return document
+
 def diseasesToChapters(df):
     df["Chapter"] = df["gs_text34"].apply(diseaseToChapter)  # guardamos los chapters
     return df
@@ -88,8 +85,6 @@ def diseaseToChapter(disease):
     return dictDC[disease]
 
 def docEmbeddingsTrain(df):
-    #Tutorial: https://towardsdatascience.com/how-to-vectorize-text-in-dataframes-for-nlp-tasks-3-simple-techniques-82925a5600db
-
     #PROBAMOS CON OTRA LIMPIEZA DE DATOS
     custom_pipeline = [#preprocessing.fillna,    #se supone que no hay casillas vacías
                        preprocessing.lowercase,
@@ -110,10 +105,9 @@ def docEmbeddingsTrain(df):
     df["clean_text"] = df.clean_text.apply(eliminar_palabras_concretas)
 
     card_docs = [TaggedDocument(doc, [i]) for i, doc in enumerate(df.clean_text)]
-    print(card_docs)
 
     # Inicializamos modelo
-    model = Doc2Vec(vector_size=200, min_count=1, epochs=20)
+    model = Doc2Vec(vector_size=100, min_count=1, epochs=10)
 
     # Construimos vocabulario
     model.build_vocab(card_docs)
@@ -122,7 +116,7 @@ def docEmbeddingsTrain(df):
     model.train(card_docs, total_examples=model.corpus_count, epochs=model.epochs)
 
     # Exportamos el modelo entrenado con pickle
-    fname = "modelos/my_doc2vec_model"
+    fname = "modelos/Embeddings/my_doc2vec_model"
     model.save(fname)
 
     # Generamos los vectores
@@ -134,10 +128,33 @@ def docEmbeddingsTrain(df):
 
     return df
 
-def wordEmbeddingsTrain(df):
-    #Tutorial: https://towardsdatascience.com/how-to-vectorize-text-in-dataframes-for-nlp-tasks-3-simple-techniques-82925a5600db
+def docEmbeddingsTest(df):
+    custom_pipeline = [preprocessing.lowercase,
+                       preprocessing.remove_diacritics,
+                       preprocessing.remove_punctuation,
+                       preprocessing.remove_digits,
+                       preprocessing.remove_stopwords,
+                       preprocessing.remove_whitespace,
+                       ]
 
-    #PROBAMOS CON OTRA LIMPIEZA DE DATOS
+    # Limpiamos el texto
+    df['clean_text'] = hero.clean(df['open_response'], custom_pipeline)
+
+
+    tokenizer = ToktokTokenizer()
+    df["clean_text"] = df.clean_text.apply(tokenizer.tokenize)
+    df["clean_text"] = df.clean_text.apply(estemizar)
+    df["clean_text"] = df.clean_text.apply(eliminar_palabras_concretas)
+
+    model = Doc2Vec.load("modelos/Embeddings/my_doc2vec_model")
+
+    card2vec = [model.infer_vector((df['clean_text'][i])) for i in range(0, len(df['clean_text']))]
+    dtv = np.array(card2vec).tolist()
+    df['card2vec'] = dtv
+
+    return df
+
+def wordEmbeddingsTrain(df):
     custom_pipeline = [#preprocessing.fillna,    #se supone que no hay casillas vacías
                        preprocessing.lowercase,
                        preprocessing.remove_diacritics,
@@ -168,7 +185,6 @@ def wordEmbeddingsTrain(df):
     model.train(card_docs, total_examples=model.corpus_count, epochs=model.epochs)
 
     # GUARDAMOS DE LAS DOS MANERAS
-
     # PARA SPACY
     model.wv.save_word2vec_format("modelos/Embeddings/my_word_embeddings.txt")
 

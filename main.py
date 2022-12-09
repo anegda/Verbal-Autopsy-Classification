@@ -8,7 +8,7 @@ import numpy as np
 import preproceso
 import modeloFlair
 import modeloSpacy
-
+import baseline
 
 def apartadoComun():
     """Esto es lo mismo para todos los modelos.
@@ -80,7 +80,8 @@ def main():
                 (2) Custome WordEmbeddings + Flair 
                 (3) WordEmbeddings + Spacy
                 (4) Custome WordEmbeddings + Spacy 
-                (5) Salir
+                (5) Baseline Gradient Boosting
+                (6) Salir
     
             By Ane García\n''')
 
@@ -107,6 +108,9 @@ def main():
         main()
 
     elif int(eleccion) == 5:
+        baseline.baseline()
+        return
+    elif int(eleccion) == 6:
         print("SALIENDO...")
         return
 
