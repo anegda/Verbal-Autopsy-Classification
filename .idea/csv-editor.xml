@@ -38,6 +38,13 @@
             </Attribute>
           </value>
         </entry>
+        <entry key="/modelos/Spacy-VA-Custome/fscore.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
       </map>
     </option>
   </component>
